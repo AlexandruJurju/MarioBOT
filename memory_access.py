@@ -1,4 +1,7 @@
 from enum import Enum
+
+import numpy as np
+
 from constants import *
 
 
@@ -60,5 +63,46 @@ class DynamicTile(Enum):
     warpzone = 0x34
 
 
-class SMBMemory:
-    pass
+# 0x006E-0x0072	, 5 enemies max , first enemy address starts at 0x06E
+enemy_x_position_in_level = 0x006E
+
+# 5 enemies from 0x87 to 0x8B 0x0087/B
+enemy_x_position_on_screen = 0x0087
+
+# Enemy y pos on screen (multiply with value at 0x00B6/A to get level y pos)
+enemy_y_position_on_screen = 0x00CF
+
+# 0x03AE-0x03B2
+enemy_x_position_within_current_screen_offset = 0x03AE
+
+# 0x03B9/D
+enemy_y_position_within_current_screen_offset = 0x03B9
+
+# 0x000F-0x0013 , bool if enemy is drawn on screen
+enemy_drawn = 0x000F
+
+enemy_type = 0x0016
+
+# 1-right 2-left
+player_direction = 0x0003
+
+# 1-right 2-left
+player_moving_direction = 0x0045
+
+player_x_position_in_level = 0x006D
+player_x_position_on_screen = 0x0086
+
+# Player y pos on screen (multiply with value at 0x00B5 to get level y pos)
+player_y_position_on_screen = 0x00CE
+player_x_position_within_current_screen_offset = 0x03AD
+player_y_position_within_current_screen_offset = 0x03B8
+
+# Player vertical screen position viewport = 1 | above viewport = 0 | anywhere below viewport is >1
+player_vertical_screen_position = 0x00B5
+
+# Enemy hitboxes (5x4 bytes, <<x1,y1> <x2,y2>>)
+hit_box = 0x04B0
+
+
+def hit_boxes(ram: np.ndarray):
+    print(ram[hit_box])

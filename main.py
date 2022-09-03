@@ -3,6 +3,7 @@ import pygame
 import numpy as np
 
 from constants import *
+from memory_access import *
 
 player_action = [1, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -45,6 +46,7 @@ class SuperMarioBros:
             observation, reward, done, info = self.env.step(player_action)
             ram = self.env.get_ram()
             rgb_array = self.env.render(mode="rgb_array")
+
 
             self.draw_game_windows(observation)
 
