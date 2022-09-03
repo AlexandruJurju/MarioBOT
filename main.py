@@ -20,6 +20,8 @@ class SuperMarioBros:
         observation = self.env.reset()
 
         print(self.env.buttons)
+        print(self.env.observation_space.shape)  # Dimensions of a frame
+        print(self.env.action_space.n)  # Number of actions our agent can take
 
     def process_events(self):
         global player_action
@@ -55,15 +57,6 @@ class SuperMarioBros:
         new_surf = pygame.pixelcopy.make_surface(game_window)
         new_surf = pygame.transform.scale2x(new_surf)
         self.window.blit(new_surf, (25, 25))
-
-        # draw input image , grayscale and resized to 17x17
-        # gray = rgb_array[:][25:70][:]
-        # gray = cv2.resize(gray, (17, 17))
-        # gray = gray_conversion(gray)
-        # gray_window = np.swapaxes(gray, 0, 1)
-        # gray_surf = pygame.pixelcopy.make_surface(gray_window)
-        # gray_surf = pygame.transform.scale(gray_surf, (200, 200))
-        # self.window.blit(gray_surf, (650, 200))
 
     def draw_snes_controller(self, action: []):
         square_base_x = 600
