@@ -1,3 +1,4 @@
+import typing
 from enum import Enum
 from collections import namedtuple
 import numpy as np
@@ -105,35 +106,23 @@ player_y_position_within_current_screen_offset = 0x03B8
 player_vertical_screen_position = 0x00B5
 
 
-def get_mario_location_in_level(ram: np.ndarray):
+def get_mario_level_location(ram: np.ndarray) -> Point:
     # gets mario position with global X and screen Y
     # multiply x with 256 because screen is 256 wide,
     mario_x = ram[player_x_position_in_level] * 256 + ram[player_x_position_on_screen]
     mario_y = ram[player_y_position_within_current_screen_offset]
 
-    return Point[mario_x, mario_y]
+    return Point(mario_x, mario_y)
 
 
-def get_mario_location_on_screen(ram: np.ndarray):
+def get_mario_screen_location(ram: np.ndarray):
     mario_x = ram[player_x_position_within_current_screen_offset]
     mario_y = ram[player_y_position_within_current_screen_offset]
 
-    return Point[mario_x, mario_y]
+    return Point(mario_x, mario_y)
 
 
-def get_tile(x, y, ram: np.ndarray):
-    page = (x // 256) % 2
-    # print(page)
-    # print(str((x % 256) // 16))
-    sub_x = (x % 256) // 16
-    sub_y = (y - 32) // 16
-
-    addr = 0x500 + page * 208 + sub_y * 16 + sub_x
-
-    return ram[addr]
-
-
-def get_enemy_positions_in_level(ram: np.ndarray):
+def get_enemies_level_locations(ram: np.ndarray) -> typing.List:
     enemies = []
 
     for enemy_count in range(MAX_ENEMIES):
@@ -146,6 +135,50 @@ def get_enemy_positions_in_level(ram: np.ndarray):
 
             enemies.append(Point(enemy_x, enemy_y))
 
+    return enemies
+
+
+def get_address_from_coordinates(x, y):
+    page = (x // 256) % 2
+    sub_x = (x % 256) // 16
+    sub_y = (y - 32) // 16
+    address = 0x500 + page * 208 + sub_y * 16 + sub_x
+    return address
+
+
+def get_tile(x, y, ram: np.ndarray):
+    address = get_address_from_coordinates(x, y)
+    return ram[address]
+
 
 def get_tiles(ram: np.ndarray):
-    pass
+    tile_map = {}
+
+    mario_level_position = get_mario_level_location(ram)
+    mario_screen_position = get_mario_screen_location(ram)
+
+    enemies = get_enemies_level_locations(ram)
+
+    for x in range(mario_level_position.x - mario_screen_position.x, mario_level_position.x - mario_screen_position.x + 256, 16):
+        for y in range(0, 240, 16):
+            model_x = x // 16
+            model_y = y // 16
+            current_location = model_x, model_y
+
+            current_tile = get_tile(x, y, ram)
+
+            if model_x < 2:
+                tile_map[current_location] = StaticTile.empty
+            else:
+                if current_tile == DynamicTile.mario:
+                    tile_map[current_location] = DynamicTile.mario
+
+                for static_tile in StaticTile:
+                    if static_tile.value == current_tile:
+                        tile_map[current_location] = static_tile
+
+                for enemy in enemies:
+                    if abs(x - enemy.x) <= 8 and abs(y - enemy.y) <= 8:
+                        tile_map[current_location] = EnemyType.goomba
+
+    return tile_map

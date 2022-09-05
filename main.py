@@ -50,10 +50,19 @@ class SuperMarioBros:
             rgb_array = self.env.render(mode="rgb_array")
 
             self.draw_game_windows(observation)
-            get_enemy_positions_in_level(ram)
+            tile_map = get_tiles(ram)
+            self.draw_model_from_tile_map(tile_map)
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)
+
+    def draw_model_from_tile_map(self, tile_map: {}):
+        square_size = 10
+        for i in range(GAME_RESOLUTION[0] // 16):
+            for j in range(GAME_RESOLUTION[1] // 16):
+                pos = (i, j)
+                if tile_map[pos] == StaticTile.empty:
+                    pygame.draw.rect(self.window, (0, 0, 0), pygame.Rect(i * square_size, j * square_size, square_size, square_size))
 
     def draw_game_windows(self, rgb_array):
         # draw game window from np array
