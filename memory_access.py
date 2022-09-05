@@ -133,7 +133,10 @@ def get_enemies_level_locations(ram: np.ndarray) -> typing.List:
 
             enemy_y = ram[enemy_y_position_on_screen + enemy_count]
 
-            enemies.append(Point(enemy_x, enemy_y))
+            ybin = np.digitize(enemy_x, list(range(16, 240, 16)))
+            xbin = np.digitize(enemy_y, list(range(16, 256, 16)))
+
+            enemies.append(Point(xbin, ybin))
 
     return enemies
 
@@ -186,9 +189,18 @@ def get_tiles(ram: np.ndarray):
             if row < 2:
                 tile_map[pos] = StaticTile.empty
             else:
+                tile_map[pos] = StaticTile.empty
+
                 for static_tile in StaticTile:
                     if static_tile.value == tile:
                         tile_map[pos] = static_tile
+
+                for dynamic_tile in DynamicTile:
+                    if dynamic_tile.value == tile:
+                        tile_map[pos] = dynamic_tile
+
+                for enemy in enemies:
+                    tile_map[(enemy.x, enemy.y)] = EnemyType.goomba
 
             col += 1
         col = 0
