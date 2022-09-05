@@ -181,8 +181,8 @@ def get_tiles(ram: np.ndarray):
 
     x_start = mario_level_position.x - mario_screen_position.x
 
-    for x in range(x_start, x_start + 256, 16):
-        for y in range(0, 240, 16):
+    for y in range(0, 240, 16):
+        for x in range(x_start, x_start + 256, 16):
             pos = (row, col)
             tile = get_tile(x, y, ram)
 
@@ -190,17 +190,17 @@ def get_tiles(ram: np.ndarray):
                 tile_map[pos] = StaticTile.empty
             else:
                 tile_map[pos] = StaticTile.empty
+                found = 0
 
                 for static_tile in StaticTile:
                     if static_tile.value == tile:
                         tile_map[pos] = static_tile
+                        found = 1
 
                 for dynamic_tile in DynamicTile:
                     if dynamic_tile.value == tile:
                         tile_map[pos] = dynamic_tile
-
-                for enemy in enemies:
-                    tile_map[(enemy.x, enemy.y)] = EnemyType.goomba
+                        found = 1
 
             col += 1
         col = 0
