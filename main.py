@@ -50,7 +50,7 @@ class SuperMarioBros:
             rgb_array = self.env.render(mode="rgb_array")
 
             self.draw_game_windows(observation)
-            print(ram[player_x_position_in_level])
+            get_enemy_positions_in_level(ram)
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)

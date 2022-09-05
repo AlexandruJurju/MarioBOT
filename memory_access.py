@@ -65,18 +65,19 @@ class DynamicTile(Enum):
     warpzone = 0x34
 
 
+# Super Mario Bros can have 5 enemies max on screen, most enemy variables go from base_address to base_address+4, one address for each enemy
+
+# enemy X position in level contains the index of the 256 wide square that the enemy is currently standing on
+# to get enemy level X = enemy_x_position_in_level * + enemy_x_position_on_screen
 # 0x006E-0x0072	, 5 enemies max , first enemy address starts at 0x06E
 enemy_x_position_in_level = 0x006E
-
 # 5 enemies from 0x87 to 0x8B 0x0087/B
 enemy_x_position_on_screen = 0x0087
-
-# Enemy y pos on screen (multiply with value at 0x00B6/A to get level y pos)
-enemy_y_position_on_screen = 0x00CF
-
 # 0x03AE-0x03B2
 enemy_x_position_within_current_screen_offset = 0x03AE
 
+# Enemy y pos on screen (multiply with value at 0x00B6/A to get level y pos)
+enemy_y_position_on_screen = 0x00CF
 # 0x03B9/D
 enemy_y_position_within_current_screen_offset = 0x03B9
 
@@ -86,7 +87,6 @@ enemy_type = 0x0016
 
 # 1-right 2-left
 player_direction = 0x0003
-
 # 1-right 2-left
 player_moving_direction = 0x0045
 
@@ -114,29 +114,37 @@ def get_mario_location_in_level(ram: np.ndarray):
     return Point[mario_x, mario_y]
 
 
+def get_mario_location_on_screen(ram: np.ndarray):
+    mario_x = ram[player_x_position_within_current_screen_offset]
+    mario_y = ram[player_y_position_within_current_screen_offset]
+
+    return Point[mario_x, mario_y]
+
+
 def get_tile(x, y, ram: np.ndarray):
     page = (x // 256) % 2
+    # print(page)
+    # print(str((x % 256) // 16))
     sub_x = (x % 256) // 16
     sub_y = (y - 32) // 16
-
-    if sub_y not in range(13):
-        return StaticTile.empty.value
 
     addr = 0x500 + page * 208 + sub_y * 16 + sub_x
 
     return ram[addr]
 
 
-def get_enemies(ram: np.ndarray):
+def get_enemy_positions_in_level(ram: np.ndarray):
+    enemies = []
+
     for enemy_count in range(MAX_ENEMIES):
         is_enemy = ram[enemy_drawn + enemy_count]
 
         if is_enemy:
-            enemy_x = ram[enemy_x_position_in_level + enemy_count] * 256 + ram[enemy_x_position_on_screen]
+            enemy_x = ram[enemy_x_position_in_level + enemy_count] * 256 + ram[enemy_x_position_on_screen + enemy_count]
 
             enemy_y = ram[enemy_y_position_on_screen + enemy_count]
 
-            print(str(enemy_x) + " " + str(enemy_y))
+            enemies.append(Point(enemy_x, enemy_y))
 
 
 def get_tiles(ram: np.ndarray):
