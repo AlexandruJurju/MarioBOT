@@ -117,7 +117,7 @@ def get_mario_level_location(ram: np.ndarray) -> Point:
 
 def get_mario_screen_location(ram: np.ndarray):
     mario_x = ram[player_x_position_within_current_screen_offset]
-    mario_y = ram[player_y_position_within_current_screen_offset]
+    mario_y = ram[player_y_position_within_current_screen_offset] * ram[player_vertical_screen_position] + 16
 
     return Point(mario_x, mario_y)
 
@@ -169,31 +169,28 @@ def get_tile(x, y, ram: np.ndarray):
 
 def get_tiles(ram: np.ndarray):
     tile_map = {}
+    row = 0
+    col = 0
 
     mario_level_position = get_mario_level_location(ram)
     mario_screen_position = get_mario_screen_location(ram)
+    enemies = get_enemies_level_locations(ram)
 
-    enemies = get_enemies_screen_locations(ram)
+    x_start = mario_level_position.x - mario_screen_position.x
 
-    for x in range(0, 256, 16):
+    for x in range(x_start, x_start + 256, 16):
         for y in range(0, 240, 16):
-            model_x = x // 16
-            model_y = y // 16
-            current_location = model_x, model_y
+            pos = (row, col)
+            tile = get_tile(x, y, ram)
 
-            current_tile = get_tile(x * 256 + mario_screen_position.x, y, ram)
-
-            if model_x < 2:
-                tile_map[current_location] = StaticTile.empty
+            if row < 2:
+                tile_map[pos] = StaticTile.empty
             else:
-                if current_tile == DynamicTile.mario:
-                    tile_map[current_location] = DynamicTile.mario
-
                 for static_tile in StaticTile:
-                    if static_tile.value == current_tile:
-                        tile_map[current_location] = static_tile
+                    if static_tile.value == tile:
+                        tile_map[pos] = static_tile
 
-                for enemy in enemies:
-                    tile_map[current_location] = EnemyType.goomba
-
+            col += 1
+        col = 0
+        row += 1
     return tile_map
