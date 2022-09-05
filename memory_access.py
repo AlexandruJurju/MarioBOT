@@ -133,11 +133,7 @@ def get_enemies_level_locations(ram: np.ndarray) -> typing.List:
 
             enemy_y = ram[enemy_y_position_on_screen + enemy_count]
 
-            ybin = np.digitize(enemy_x, list(range(16, 240, 16)))
-            xbin = np.digitize(enemy_y, list(range(16, 256, 16)))
-
-            enemies.append(Point(xbin, ybin))
-
+            enemies.append(Point(enemy_x, enemy_y))
     return enemies
 
 
@@ -180,6 +176,7 @@ def get_tiles(ram: np.ndarray):
     enemies = get_enemies_level_locations(ram)
 
     x_start = mario_level_position.x - mario_screen_position.x
+    start_x = mario_level_position.x - mario_screen_position.x
 
     for y in range(0, 240, 16):
         for x in range(x_start, x_start + 256, 16):
@@ -202,6 +199,12 @@ def get_tiles(ram: np.ndarray):
                         tile_map[pos] = dynamic_tile
                         found = 1
 
+                for enemy in enemies:
+                    model_x = (enemy.x - x_start) // 16
+                    model_y = enemy.y // 16
+                    tile_map[(model_y, model_x)] = EnemyType.goomba
+
+                    print(str(model_x) + " " + str(model_y))
             col += 1
         col = 0
         row += 1
