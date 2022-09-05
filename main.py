@@ -36,6 +36,8 @@ class SuperMarioBros:
                     player_action = [0, 0, 0, 0, 0, 0, 0, 1, 0]
                 if event.key == pygame.K_LEFT:
                     player_action = [0, 0, 0, 0, 0, 0, 1, 0, 0]
+                if event.key == pygame.K_r:
+                    self.env.reset()
 
     def run(self):
 
@@ -47,8 +49,8 @@ class SuperMarioBros:
             ram = self.env.get_ram()
             rgb_array = self.env.render(mode="rgb_array")
 
-
             self.draw_game_windows(observation)
+            print(ram[player_x_position_in_level])
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)

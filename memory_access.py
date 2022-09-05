@@ -1,8 +1,10 @@
 from enum import Enum
-
+from collections import namedtuple
 import numpy as np
 
 from constants import *
+
+Point = namedtuple('Point', ['x', 'y'])
 
 
 class EnemyType(Enum):
@@ -80,7 +82,6 @@ enemy_y_position_within_current_screen_offset = 0x03B9
 
 # 0x000F-0x0013 , bool if enemy is drawn on screen
 enemy_drawn = 0x000F
-
 enemy_type = 0x0016
 
 # 1-right 2-left
@@ -89,20 +90,54 @@ player_direction = 0x0003
 # 1-right 2-left
 player_moving_direction = 0x0045
 
+# player position in level contains the number of 256 units traveled in X direction
+# to get level player X  ->  player_x_position_in_level * 256 + player_x_position_on_screen
 player_x_position_in_level = 0x006D
 player_x_position_on_screen = 0x0086
-
-# Player y pos on screen (multiply with value at 0x00B5 to get level y pos)
-player_y_position_on_screen = 0x00CE
 player_x_position_within_current_screen_offset = 0x03AD
+
+# Player Y pos on screen (multiply with value at 0x00B5 to get level y pos)
+# level Y position isn't needed, local Y is good enough
+player_y_position_on_screen = 0x00CE
 player_y_position_within_current_screen_offset = 0x03B8
 
 # Player vertical screen position viewport = 1 | above viewport = 0 | anywhere below viewport is >1
 player_vertical_screen_position = 0x00B5
 
-# Enemy hitboxes (5x4 bytes, <<x1,y1> <x2,y2>>)
-hit_box = 0x04B0
+
+def get_mario_location_in_level(ram: np.ndarray):
+    # gets mario position with global X and screen Y
+    # multiply x with 256 because screen is 256 wide,
+    mario_x = ram[player_x_position_in_level] * 256 + ram[player_x_position_on_screen]
+    mario_y = ram[player_y_position_within_current_screen_offset]
+
+    return Point[mario_x, mario_y]
 
 
-def hit_boxes(ram: np.ndarray):
-    print(ram[hit_box])
+def get_tile(x, y, ram: np.ndarray):
+    page = (x // 256) % 2
+    sub_x = (x % 256) // 16
+    sub_y = (y - 32) // 16
+
+    if sub_y not in range(13):
+        return StaticTile.empty.value
+
+    addr = 0x500 + page * 208 + sub_y * 16 + sub_x
+
+    return ram[addr]
+
+
+def get_enemies(ram: np.ndarray):
+    for enemy_count in range(MAX_ENEMIES):
+        is_enemy = ram[enemy_drawn + enemy_count]
+
+        if is_enemy:
+            enemy_x = ram[enemy_x_position_in_level + enemy_count] * 256 + ram[enemy_x_position_on_screen]
+
+            enemy_y = ram[enemy_y_position_on_screen + enemy_count]
+
+            print(str(enemy_x) + " " + str(enemy_y))
+
+
+def get_tiles(ram: np.ndarray):
+    pass
