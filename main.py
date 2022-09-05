@@ -58,11 +58,17 @@ class SuperMarioBros:
 
     def draw_model_from_tile_map(self, tile_map: {}):
         square_size = 10
+        print(tile_map)
+
         for i in range(GAME_RESOLUTION[0] // 16):
             for j in range(GAME_RESOLUTION[1] // 16):
                 pos = (i, j)
                 if tile_map[pos] == StaticTile.empty:
-                    pygame.draw.rect(self.window, (0, 0, 0), pygame.Rect(i * square_size, j * square_size, square_size, square_size))
+                    pygame.draw.rect(self.window, (128, 128, 128), pygame.Rect(i * square_size, j * square_size, square_size, square_size), width=1)
+                if tile_map[pos] == StaticTile.ground:
+                    pygame.draw.rect(self.window, (165, 42, 42), pygame.Rect(i * square_size, j * square_size, square_size, square_size), width=1)
+                if tile_map[pos] == EnemyType.goomba:
+                    pygame.draw.rect(self.window, (255, 42, 42), pygame.Rect(i * square_size, j * square_size, square_size, square_size), width=1)
 
     def draw_game_windows(self, rgb_array):
         # draw game window from np array

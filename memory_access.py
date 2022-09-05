@@ -138,6 +138,22 @@ def get_enemies_level_locations(ram: np.ndarray) -> typing.List:
     return enemies
 
 
+def get_enemies_screen_locations(ram: np.ndarray):
+    enemies = []
+
+    for enemy_count in range(MAX_ENEMIES):
+        is_enemy = ram[enemy_drawn + enemy_count]
+
+        if is_enemy:
+            enemy_x = ram[enemy_x_position_on_screen + enemy_count]
+
+            enemy_y = ram[enemy_y_position_on_screen + enemy_count]
+
+            enemies.append(Point(enemy_x, enemy_y))
+
+    return enemies
+
+
 def get_address_from_coordinates(x, y):
     page = (x // 256) % 2
     sub_x = (x % 256) // 16
@@ -157,15 +173,15 @@ def get_tiles(ram: np.ndarray):
     mario_level_position = get_mario_level_location(ram)
     mario_screen_position = get_mario_screen_location(ram)
 
-    enemies = get_enemies_level_locations(ram)
+    enemies = get_enemies_screen_locations(ram)
 
-    for x in range(mario_level_position.x - mario_screen_position.x, mario_level_position.x - mario_screen_position.x + 256, 16):
+    for x in range(0, 256, 16):
         for y in range(0, 240, 16):
             model_x = x // 16
             model_y = y // 16
             current_location = model_x, model_y
 
-            current_tile = get_tile(x, y, ram)
+            current_tile = get_tile(x * 256 + mario_screen_position.x, y, ram)
 
             if model_x < 2:
                 tile_map[current_location] = StaticTile.empty
@@ -178,7 +194,6 @@ def get_tiles(ram: np.ndarray):
                         tile_map[current_location] = static_tile
 
                 for enemy in enemies:
-                    if abs(x - enemy.x) <= 8 and abs(y - enemy.y) <= 8:
-                        tile_map[current_location] = EnemyType.goomba
+                    tile_map[current_location] = EnemyType.goomba
 
     return tile_map
