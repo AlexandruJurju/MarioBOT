@@ -67,8 +67,12 @@ class SuperMarioBros:
                     pygame.draw.rect(self.window, (128, 128, 128), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
                 elif tile_map[pos] == StaticTile.ground:
                     pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
+
                 if tile_map[pos] == EnemyType.goomba:
                     pygame.draw.rect(self.window, (255, 64, 64), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
+
+                if tile_map[pos] == DynamicTile.mario:
+                    pygame.draw.rect(self.window, (255, 255, 0), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
 
     def draw_game_windows(self, rgb_array):
         # draw game window from np array
