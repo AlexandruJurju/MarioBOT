@@ -56,8 +56,7 @@ class SuperMarioBros:
             self.draw_game_windows(observation)
             tile_map = get_tiles(ram)
             self.draw_model_from_tile_map(tile_map)
-            # self.border_observation_area(top_left_corner, bottom_right_corner)
-            self.draw_observation_area(top_left_corner, bottom_right_corner, tile_map, get_mario_model_location(ram))
+            model_map_from_tile_map(tile_map)
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)
@@ -140,12 +139,12 @@ class SuperMarioBros:
         x_offset = 600
         y_offset = 25
 
-        for i in range(15):
-            for j in range(16):
-                pos = (i, j)
+        for row in range(15):
+            for col in range(16):
+                pos = (row, col)
                 current_tile = tile_map[pos]
-                draw_x = j * square_size + x_offset
-                draw_y = i * square_size + y_offset
+                draw_x = col * square_size + x_offset
+                draw_y = row * square_size + y_offset
 
                 self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
 
@@ -156,14 +155,17 @@ class SuperMarioBros:
         x_offset = 500
         y_offset = 225
 
-        for i in range(mario_location.x - 3, mario_location.x + 2):
-            for j in range(mario_location.y - 2, mario_location.y + 4):
+        print(mario_location)
+        model_map_from_tile_map(tile_map)
 
-                if (0 <= i <= 15) and (0 <= j <= 16):
+        for i in range(mario_location.x - 5, mario_location.x + 5):
+            for j in range(mario_location.y - 5, mario_location.y + 5):
+
+                if (0 <= i <= 16) and (0 <= j <= 15):
                     pos = (i, j)
                     current_tile = tile_map[pos]
-                    draw_x = j * square_size + x_offset
-                    draw_y = i * square_size + y_offset
+                    draw_x = i * square_size + x_offset
+                    draw_y = j * square_size + y_offset
 
                     if top_left_corner.y <= i <= bottom_right_corner.y and bottom_right_corner.x >= j >= top_left_corner.x:
                         self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
@@ -178,10 +180,16 @@ class SuperMarioBros:
         elif current_tile == StaticTile.pipe_top1 or current_tile == StaticTile.pipe_top2 \
                 or current_tile == StaticTile.pipe_bottom1 or current_tile == StaticTile.pipe_bottom2:
             pygame.draw.rect(self.window, (0, 190, 0), pygame.Rect(draw_x, draw_y, square_size, square_size))
-        if current_tile == EnemyType.goomba:
+
+        elif current_tile == EnemyType.goomba:
             pygame.draw.rect(self.window, (255, 64, 64), pygame.Rect(draw_x, draw_y, square_size, square_size))
-        if current_tile == DynamicTile.mario:
+
+        elif current_tile == DynamicTile.mario:
             pygame.draw.rect(self.window, (255, 255, 0), pygame.Rect(draw_x, draw_y, square_size, square_size))
+
+        else:
+            pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(draw_x, draw_y, square_size, square_size))
+
         pygame.draw.rect(self.window, (255, 255, 255), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
 
 
