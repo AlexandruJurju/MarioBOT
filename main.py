@@ -52,6 +52,7 @@ class SuperMarioBros:
             self.draw_game_windows(observation)
             tile_map = get_tiles(ram)
             self.draw_model_from_tile_map(tile_map)
+            model_map_from_tile_map(tile_map)
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)
@@ -60,18 +61,19 @@ class SuperMarioBros:
         square_size = 10
         x_offset = 650
 
-        for i in range(GAME_RESOLUTION[1] // 16):
-            for j in range(GAME_RESOLUTION[0] // 16):
+        for i in range(15):
+            for j in range(16):
                 pos = (i, j)
-                if tile_map[pos] == StaticTile.empty:
+                current_tile = tile_map[pos]
+
+                if current_tile == StaticTile.empty:
                     pygame.draw.rect(self.window, (128, 128, 128), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
-                elif tile_map[pos] == StaticTile.ground:
+                elif current_tile == StaticTile.ground:
                     pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
 
-                if tile_map[pos] == EnemyType.goomba:
+                if current_tile == EnemyType.goomba:
                     pygame.draw.rect(self.window, (255, 64, 64), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
-
-                if tile_map[pos] == DynamicTile.mario:
+                if current_tile == DynamicTile.mario:
                     pygame.draw.rect(self.window, (255, 255, 0), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
 
     def draw_game_windows(self, rgb_array):

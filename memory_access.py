@@ -82,6 +82,12 @@ enemy_y_position_on_screen = 0x00CF
 # 0x03B9/D
 enemy_y_position_within_current_screen_offset = 0x03B9
 
+# Enemy hitboxes (5x4 bytes, <<x1,y1> <x2,y2>>)
+# multiply enemy_x = ram[base + enemy_count * 4]
+# each hitbox contains coordinates for top-left and bottom-right corner
+# TODO enemy pos with hitboxes
+enemy_hitbox_base = 0x04B0
+
 # 0x000F-0x0013 , bool if enemy is drawn on screen
 enemy_drawn = 0x000F
 enemy_type = 0x0016
@@ -104,6 +110,10 @@ player_y_position_within_current_screen_offset = 0x03B8
 
 # Player vertical screen position viewport = 1 | above viewport = 0 | anywhere below viewport is >1
 player_vertical_screen_position = 0x00B5
+
+# Player hitbox (1x4 bytes, <<x1,y1> <x2,y2>>)
+# TODO get player position with hitboxes
+player_hitbox = 0x04AC
 
 
 def get_mario_level_location(ram: np.ndarray) -> Point:
@@ -166,6 +176,7 @@ def get_tile(x, y, ram: np.ndarray):
     return ram[address]
 
 
+# TODO better get_tiles function
 def get_tiles(ram: np.ndarray):
     tile_map = {}
     row = 0
@@ -175,11 +186,10 @@ def get_tiles(ram: np.ndarray):
     mario_screen_position = get_mario_screen_location(ram)
     enemies = get_enemies_level_locations(ram)
 
-    x_start = mario_level_position.x - mario_screen_position.x
     start_x = mario_level_position.x - mario_screen_position.x
 
     for y in range(0, 240, 16):
-        for x in range(x_start, x_start + 256, 16):
+        for x in range(start_x, start_x + 256, 16):
             pos = (row, col)
             tile = get_tile(x, y, ram)
 
@@ -197,7 +207,7 @@ def get_tiles(ram: np.ndarray):
                         tile_map[pos] = dynamic_tile
 
                 for enemy in enemies:
-                    model_x = (enemy.x - x_start) // 16 + 1
+                    model_x = (enemy.x - start_x) // 16 + 1
                     model_y = enemy.y // 16 + 1
                     tile_map[(model_y, model_x)] = EnemyType.goomba
 
@@ -210,3 +220,23 @@ def get_tiles(ram: np.ndarray):
         col = 0
         row += 1
     return tile_map
+
+
+def model_map_from_tile_map(tile_map: {}):
+    model = np.zeros((15, 16))
+
+    for i in range(15):
+        for j in range(16):
+            pos = (i, j)
+            current_tile = tile_map[pos]
+
+            if current_tile == StaticTile.empty:
+                model[i][j] = 0
+            if current_tile == StaticTile.ground:
+                model[i][j] = 1
+            if current_tile == EnemyType.goomba:
+                model[i][j] = -1
+
+            print(model[i][j], end=" ")
+        print()
+    print()
