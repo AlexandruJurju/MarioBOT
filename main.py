@@ -52,7 +52,6 @@ class SuperMarioBros:
             self.draw_game_windows(observation)
             tile_map = get_tiles(ram)
             self.draw_model_from_tile_map(tile_map)
-            model_map_from_tile_map(tile_map)
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)
