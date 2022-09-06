@@ -177,6 +177,7 @@ def get_tile(x, y, ram: np.ndarray):
 
 
 # TODO better get_tiles function
+# TODO inverse i and j
 def get_tiles(ram: np.ndarray):
     tile_map = {}
     row = 0
@@ -211,15 +212,24 @@ def get_tiles(ram: np.ndarray):
                     model_y = enemy.y // 16 + 1
                     tile_map[(model_y, model_x)] = EnemyType.goomba
 
-                mario_model_x = mario_screen_position.x // 16 + 1
-                mario_model_y = mario_level_position.y // 16 + 1
-
-                tile_map[(mario_model_y, mario_model_x)] = DynamicTile.mario
+                mario_model_position = get_mario_model_location(ram)
+                tile_map[mario_model_position] = DynamicTile.mario
 
             col += 1
         col = 0
         row += 1
     return tile_map
+
+
+# TODO inverse Y AND X !!!!!!
+def get_mario_model_location(ram: np.ndarray):
+    mario_level_position = get_mario_level_location(ram)
+    mario_screen_position = get_mario_screen_location(ram)
+
+    mario_model_x = mario_screen_position.x // TILE_SIZE + 1
+    mario_model_y = mario_level_position.y // TILE_SIZE + 1
+
+    return Point(mario_model_y, mario_model_x)
 
 
 def model_map_from_tile_map(tile_map: {}):
