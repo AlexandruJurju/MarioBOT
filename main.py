@@ -42,12 +42,11 @@ class SuperMarioBros:
     def run(self):
 
         while self.running:
-            self.window.fill(BLACK)
+            self.window.fill(WHITE)
             self.process_events()
 
             observation, reward, done, info = self.env.step(player_action)
             ram = self.env.get_ram()
-            rgb_array = self.env.render(mode="rgb_array")
 
             self.draw_game_windows(observation)
             tile_map = get_tiles(ram)
@@ -57,23 +56,35 @@ class SuperMarioBros:
             self.fps_clock.tick(MAX_FPS)
 
     def draw_model_from_tile_map(self, tile_map: {}):
-        square_size = 10
+        square_size = 20
         x_offset = 650
+        y_offset = 100
 
         for i in range(15):
             for j in range(16):
                 pos = (i, j)
                 current_tile = tile_map[pos]
+                draw_x = j * square_size + x_offset
+                draw_y = i * square_size + y_offset
+                rect_width = 3
 
                 if current_tile == StaticTile.empty:
-                    pygame.draw.rect(self.window, (128, 128, 128), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
-                elif current_tile == StaticTile.ground:
-                    pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
+                    pygame.draw.rect(self.window, (53, 81, 92), pygame.Rect(draw_x, draw_y, square_size, square_size))
 
+                elif current_tile == StaticTile.ground:
+                    pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(draw_x, draw_y, square_size, square_size))
+
+                elif current_tile == StaticTile.pipe_top1 or current_tile == StaticTile.pipe_top2 \
+                        or current_tile == StaticTile.pipe_bottom1 or current_tile == StaticTile.pipe_bottom2:
+                    pygame.draw.rect(self.window, (0, 190, 0), pygame.Rect(draw_x, draw_y, square_size, square_size))
+                    
                 if current_tile == EnemyType.goomba:
-                    pygame.draw.rect(self.window, (255, 64, 64), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
+                    pygame.draw.rect(self.window, (255, 64, 64), pygame.Rect(draw_x, draw_y, square_size, square_size))
+
                 if current_tile == DynamicTile.mario:
-                    pygame.draw.rect(self.window, (255, 255, 0), pygame.Rect(j * square_size + x_offset, i * square_size, square_size, square_size), width=1)
+                    pygame.draw.rect(self.window, (255, 255, 0), pygame.Rect(draw_x, draw_y, square_size, square_size))
+
+                pygame.draw.rect(self.window, (255, 255, 255), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
 
     def draw_game_windows(self, rgb_array):
         # draw game window from np array
