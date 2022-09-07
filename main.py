@@ -39,11 +39,6 @@ class SuperMarioBros:
 
     def run(self):
 
-        right_view = 5
-        back_view = 2
-        up_view = 5
-        down_view = 2
-
         while self.running:
             self.window.fill(WHITE)
             self.process_events()
@@ -52,7 +47,7 @@ class SuperMarioBros:
             ram = self.env.get_ram()
             tile_map = get_tiles(ram)
 
-            self.redraw_windows(back_view, down_view, observation, ram, right_view, tile_map, up_view)
+            self.redraw_windows(up_view=UP_VIEW, down_view=DOWN_VIEW, right_view=RIGHT_VIEW, back_view=BACK_VIEW, observation=observation, ram=ram, tile_map=tile_map)
 
             self.fps_clock.tick(MAX_FPS)
 
