@@ -48,22 +48,30 @@ class SuperMarioBros:
             ram = self.env.get_ram()
             tile_map = get_tiles(ram)
 
-            self.redraw_windows(up_view=UP_VIEW, down_view=DOWN_VIEW, right_view=RIGHT_VIEW, back_view=BACK_VIEW, observation=observation, ram=ram, tile_map=tile_map)
+            self.redraw_windows(up_view=UP_VIEW, down_view=DOWN_VIEW, right_view=RIGHT_VIEW, left_view=LEFT_VIEW, observation=observation, ram=ram, tile_map=tile_map)
 
             self.fps_clock.tick(MAX_FPS)
 
-    def redraw_windows(self, back_view, down_view, observation, ram, right_view, tile_map, up_view):
+    def redraw_windows(self, observation, ram, tile_map, up_view, down_view, left_view, right_view):
         self.draw_game_windows(observation)
 
         self.draw_tile_map(tile_map, 550, 25, 15)
 
+        # dynamic_tile_map = self.get_dynamic_view_tiles(tile_map, get_mario_model_location(ram), right_view, back_view, up_view, down_view)
+        # self.draw_tile_map(dynamic_tile_map, 550, 300, 15)
+        # self.highlight_map(dynamic_tile_map, 550, 25, 15)
+        #
         # static_tile_map = self.get_static_view_tiles(tile_map, Point(5, 5), Point(15, 14))
-        # self.draw_tile_map( static_tile_map, 550, 300, 15)
+        # self.draw_tile_map(static_tile_map, 550, 300, 15)
+        # self.highlight_map(static_tile_map, 550, 25, 15)
 
-        dynamic_tile_map = self.get_dynamic_view_tiles(tile_map, get_mario_model_location(ram), right_view, back_view, up_view, down_view)
-        self.draw_tile_map(dynamic_tile_map, 550, 300, 15)
-        self.highlight_map(dynamic_tile_map, 550, 25, 15)
+        if get_mario_model_location(ram).x < 7:
+            active_tile_map = self.get_dynamic_view_tiles(tile_map, get_mario_model_location(ram), right_view, left_view, up_view, down_view)
+        else:
+            active_tile_map = self.get_static_view_tiles(tile_map, Point(7, 4), Point(13, 13))
 
+        self.draw_tile_map(active_tile_map, 550, 300, 15)
+        self.highlight_map(active_tile_map, 550, 25, 15)
         pygame.display.update()
 
     def draw_game_windows(self, rgb_array):
@@ -187,14 +195,15 @@ class SuperMarioBros:
                 draw_y = row * square_size + y_offset
 
                 if pos in tile_map:
-                    pygame.draw.rect(self.window, (24, 115, 204), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
+                    pygame.draw.rect(self.window, (24, 115, 204), pygame.Rect(draw_x, draw_y, square_size, square_size), width=2)
 
 
 if __name__ == '__main__':
-    # game = SuperMarioBros()
-    # game.run()
-    bot = MarioBot(NeuralNetwork(NN_CONFIG))
-    print(bot.calculate_fitness())
+    game = SuperMarioBros()
+    game.run()
 
-    bot.brain.init_random_neural_net()
-    print(bot.brain.weights)
+    # bot = MarioBot(NeuralNetwork(NN_CONFIG))
+    # print(bot.calculate_fitness())
+    #
+    # bot.brain.init_random_neural_net()
+    # print(bot.brain.weights)
