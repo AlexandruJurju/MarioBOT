@@ -86,3 +86,10 @@
 #         row += 1
 #     row = 0
 #     col += 1
+# dynamic_tile_map = self.get_dynamic_view_tiles(tile_map, get_mario_model_location(ram), right_view, back_view, up_view, down_view)
+# self.draw_tile_map(dynamic_tile_map, 550, 300, 15)
+# self.highlight_map(dynamic_tile_map, 550, 25, 15)
+#
+# static_tile_map = self.get_static_view_tiles(tile_map, Point(5, 5), Point(15, 14))
+# self.draw_tile_map(static_tile_map, 550, 300, 15)
+# self.highlight_map(static_tile_map, 550, 25, 15)

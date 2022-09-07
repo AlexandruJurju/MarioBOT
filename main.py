@@ -48,33 +48,32 @@ class SuperMarioBros:
             ram = self.env.get_ram()
             tile_map = get_tiles(ram)
 
-            self.redraw_windows(up_view=UP_VIEW, down_view=DOWN_VIEW, right_view=RIGHT_VIEW, left_view=LEFT_VIEW, observation=observation, ram=ram, tile_map=tile_map)
+            active_tile_map = self.get_active_model_view(UP_VIEW, DOWN_VIEW, LEFT_VIEW, RIGHT_VIEW, tile_map, ram)
+            self.redraw_windows(observation=observation, tile_map=tile_map, active_tile_map=active_tile_map)
 
             self.fps_clock.tick(MAX_FPS)
 
-    def redraw_windows(self, observation, ram, tile_map, up_view, down_view, left_view, right_view):
-        self.draw_game_windows(observation)
+    def redraw_windows(self, observation, tile_map, active_tile_map):
+        # emulator game window
+        self.draw_emulator_window(observation)
 
-        self.draw_tile_map(tile_map, 550, 25, 15)
+        # main model
+        self.draw_model_view(tile_map, 550, 25, 15)
 
-        # dynamic_tile_map = self.get_dynamic_view_tiles(tile_map, get_mario_model_location(ram), right_view, back_view, up_view, down_view)
-        # self.draw_tile_map(dynamic_tile_map, 550, 300, 15)
-        # self.highlight_map(dynamic_tile_map, 550, 25, 15)
-        #
-        # static_tile_map = self.get_static_view_tiles(tile_map, Point(5, 5), Point(15, 14))
-        # self.draw_tile_map(static_tile_map, 550, 300, 15)
-        # self.highlight_map(static_tile_map, 550, 25, 15)
+        # minimal view
+        self.draw_model_view(active_tile_map, 550, 300, 15)
+        self.highlight_model_view(active_tile_map, 550, 25, 15)
 
-        if get_mario_model_location(ram).x < 7:
-            active_tile_map = self.get_dynamic_view_tiles(tile_map, get_mario_model_location(ram), right_view, left_view, up_view, down_view)
-        else:
-            active_tile_map = self.get_static_view_tiles(tile_map, Point(7, 4), Point(13, 13))
-
-        self.draw_tile_map(active_tile_map, 550, 300, 15)
-        self.highlight_map(active_tile_map, 550, 25, 15)
         pygame.display.update()
 
-    def draw_game_windows(self, rgb_array):
+    def get_active_model_view(self, up_view, down_view, left_view, right_view, tile_map, ram):
+        if get_mario_model_location(ram).x < 7:
+            active_tile_map = self.get_dynamic_model_view(tile_map, get_mario_model_location(ram), right_view, left_view, up_view, down_view)
+        else:
+            active_tile_map = self.get_static_model_view(tile_map, Point(7, 4), Point(13, 13))
+        return active_tile_map
+
+    def draw_emulator_window(self, rgb_array):
         # draw game window from np array
         game_window = np.swapaxes(rgb_array, 0, 1)
         new_surf = pygame.pixelcopy.make_surface(game_window)
@@ -154,7 +153,7 @@ class SuperMarioBros:
 
         pygame.draw.rect(self.window, (255, 255, 255), pygame.Rect(x_position, y_position, square_size, square_size), width=1)
 
-    def get_static_view_tiles(self, tile_map: {}, top_left_corner: Point, bottom_right_corner: Point):
+    def get_static_model_view(self, tile_map: {}, top_left_corner: Point, bottom_right_corner: Point):
         static_tile_map = {}
         for row in range(15):
             for col in range(16):
@@ -163,7 +162,7 @@ class SuperMarioBros:
 
         return static_tile_map
 
-    def get_dynamic_view_tiles(self, tile_map: {}, mario_location: Point, right_view, back_view, up_view, down_view):
+    def get_dynamic_model_view(self, tile_map: {}, mario_location: Point, right_view, back_view, up_view, down_view):
         dynamic_tile_map = {}
         for row in range(mario_location.y - up_view, mario_location.y + down_view + 1):
             for col in range(mario_location.x - back_view, mario_location.x + right_view + 1):
@@ -174,7 +173,7 @@ class SuperMarioBros:
 
         return dynamic_tile_map
 
-    def draw_tile_map(self, tile_map: {}, x_offset, y_offset, square_size):
+    def draw_model_view(self, tile_map: {}, x_offset, y_offset, square_size):
         for row in range(15):
             for col in range(16):
                 pos = (row, col)
@@ -187,7 +186,7 @@ class SuperMarioBros:
                 else:
                     pygame.draw.rect(self.window, (128, 128, 128), pygame.Rect(draw_x, draw_y, square_size, square_size), width=3)
 
-    def highlight_map(self, tile_map: {}, x_offset, y_offset, square_size):
+    def highlight_model_view(self, tile_map: {}, x_offset, y_offset, square_size):
         for row in range(15):
             for col in range(16):
                 pos = (row, col)
