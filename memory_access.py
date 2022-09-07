@@ -176,8 +176,6 @@ def get_tile(x, y, ram: np.ndarray):
     return ram[address]
 
 
-# TODO better get_tiles function
-# TODO inverse i and j
 def get_tiles(ram: np.ndarray):
     tile_map = {}
     row = 0
@@ -187,7 +185,7 @@ def get_tiles(ram: np.ndarray):
     mario_screen_position = get_mario_screen_location(ram)
     enemies = get_enemies_level_locations(ram)
 
-    start_x = mario_level_position.x - mario_screen_position.x
+    width_start = mario_level_position.x - mario_screen_position.x
 
     # for x in range(start_x, start_x + 256, 16):
     #     for y in range(0, 240, 16):
@@ -221,11 +219,11 @@ def get_tiles(ram: np.ndarray):
 
     # INTERCHANGED BECAUSE SCREEN IS 240 HIGH AND 256 WIDE
 
-    for LEVEL_ROW in range(0, 240, 16):
-        for LEVEL_COL in range(start_x, start_x + 256, 16):
+    for height in range(0, 240, 16):
+        for width in range(width_start, width_start + 256, 16):
             pos = (row, col)
 
-            tile = get_tile(LEVEL_COL, LEVEL_ROW, ram)
+            tile = get_tile(width, height, ram)
 
             if row < 2:
                 tile_map[pos] = StaticTile.empty
@@ -240,10 +238,11 @@ def get_tiles(ram: np.ndarray):
                     if dynamic_tile.value == tile:
                         tile_map[pos] = dynamic_tile
 
-            for enemy in enemies:
-                model_x = (enemy.x - start_x) // 16 + 1
-                model_y = enemy.y // 16 + 1
-                tile_map[(model_y, model_x)] = EnemyType.goomba
+            if len(enemies) != 0:
+                for enemy in enemies:
+                    model_x = (enemy.x - width_start) // 16 + 1
+                    model_y = enemy.y // 16 + 1
+                    tile_map[(model_y, model_x)] = EnemyType.goomba
 
             col += 1
         col = 0
@@ -255,7 +254,6 @@ def get_tiles(ram: np.ndarray):
     return tile_map
 
 
-# TODO inverse Y AND X !!!!!!
 def get_mario_model_location(ram: np.ndarray):
     mario_level_position = get_mario_level_location(ram)
     mario_screen_position = get_mario_screen_location(ram)
