@@ -16,7 +16,7 @@ class SuperMarioBros:
         self.running = True
 
         self.env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
-        observation = self.env.reset()
+        self.env.reset()
 
         print(self.env.buttons)
         print(self.env.observation_space.shape)  # Dimensions of a frame
