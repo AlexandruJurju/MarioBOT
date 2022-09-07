@@ -41,10 +41,10 @@ class SuperMarioBros:
 
     def run(self):
 
-        top_left_corner = Point(6, 4)
-        bottom_right_corner = Point(15, 13)
-        observation_x = 10
-        observation_y = 10
+        right_view = 5
+        back_view = 2
+        up_view = 5
+        down_view = 2
 
         while self.running:
             self.window.fill(WHITE)
@@ -55,8 +55,9 @@ class SuperMarioBros:
             tile_map = get_tiles(ram)
 
             self.draw_game_windows(observation)
-            self.draw_model_from_tile_map(tile_map)
-            self.draw_observation_area(top_left_corner, bottom_right_corner, tile_map, get_mario_model_location(ram))
+            self.draw_tile_model(tile_map)
+            self.draw_minimal_tile_model(tile_map, get_mario_model_location(ram), right_view, back_view, up_view, down_view)
+            self.highlight_minimal_tile_model(get_mario_model_location(ram), right_view, back_view, up_view, down_view)
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)
@@ -141,7 +142,7 @@ class SuperMarioBros:
 
         pygame.draw.rect(self.window, (255, 255, 255), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
 
-    def draw_model_from_tile_map(self, tile_map: {}):
+    def draw_tile_model(self, tile_map: {}):
         square_size = 15
         x_offset = 600
         y_offset = 25
@@ -155,47 +156,49 @@ class SuperMarioBros:
 
                 self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
 
-    def border_observation_area(self, top_left_corner: Point, bottom_right_corner: Point):
+    def highlight_minimal_tile_model(self, mario_location: Point, right_view, back_view, up_view, down_view):
         square_size = 15
         x_offset = 600
         y_offset = 25
 
-        for row in range(15):
-            for col in range(16):
-                draw_x = col * square_size + x_offset
-                draw_y = row * square_size + y_offset
+        for row in range(mario_location.y - up_view, mario_location.y + down_view + 1):
+            for col in range(mario_location.x - back_view, mario_location.x + right_view + 1):
 
-                if top_left_corner.y <= row <= bottom_right_corner.y and bottom_right_corner.x >= col >= top_left_corner.x:
-                    pygame.draw.rect(self.window, (255, 0, 0), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
+                if (0 <= row < 15) and (0 <= col < 16):
+                    draw_x = col * square_size + x_offset
+                    draw_y = row * square_size + y_offset
 
-    # TODO draw observable area around mario, like in mario kart
-    def draw_observation_area(self, top_left_corner: Point, bottom_right_corner: Point, tile_map: {}, mario_location: Point):
-        square_size = 25
+                    pygame.draw.rect(self.window, (30, 144, 255), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
+
+    def draw_minimal_tile_model(self, tile_map: {}, mario_location: Point, right_view, back_view, up_view, down_view):
+        square_size = 20
         x_offset = 500
         y_offset = 225
 
-        # for i in range(mario_location.x - 5, mario_location.x + 5):
-        #     for j in range(mario_location.y - 5, mario_location.y + 5):
-        #
-        #         if (0 <= i <= 16) and (0 <= j <= 15):
-        #             pos = (i, j)
-        #             current_tile = tile_map[pos]
-        #             draw_x = i * square_size + x_offset
-        #             draw_y = j * square_size + y_offset
-        #
-        #             if top_left_corner.y <= i <= bottom_right_corner.y and bottom_right_corner.x >= j >= top_left_corner.x:
-        #                 self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
+        for row in range(mario_location.y - up_view, mario_location.y + down_view + 1):
+            for col in range(mario_location.x - back_view, mario_location.x + right_view + 1):
 
-        for row in range(15):
-            for col in range(16):
-                if (0 <= row <= 15) and (0 <= col <= 16):
+                # if within model matrix
+                if (0 <= row < 15) and (0 <= col < 16):
                     pos = (row, col)
                     current_tile = tile_map[pos]
                     draw_x = col * square_size + x_offset
                     draw_y = row * square_size + y_offset
 
-                    if top_left_corner.y <= row <= bottom_right_corner.y and top_left_corner.x <= col <= bottom_right_corner.x:
-                        self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
+                    self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
+
+    # def highlight_tile_model_zone(self, top_left_corner: Point, bottom_right_corner: Point):
+    #     square_size = 15
+    #     x_offset = 600
+    #     y_offset = 25
+    #
+    #     for row in range(15):
+    #         for col in range(16):
+    #             draw_x = col * square_size + x_offset
+    #             draw_y = row * square_size + y_offset
+    #
+    #             if top_left_corner.y <= row <= bottom_right_corner.y and bottom_right_corner.x >= col >= top_left_corner.x:
+    #                 pygame.draw.rect(self.window, (255, 0, 0), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
 
 
 if __name__ == '__main__':
