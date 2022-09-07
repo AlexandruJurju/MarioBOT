@@ -3,8 +3,8 @@ import random
 import numpy as np
 
 from typing import List, Tuple, Optional, Union
-from individual import Individual
-from neural_network import *
+from ai.individual import Individual
+from ai.neural_network import NeuralNetwork
 
 
 # GA selection , selects snake with percentage based on snake fitness // chance for snake to be selected is directly proportional with snake fitness

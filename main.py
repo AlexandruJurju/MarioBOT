@@ -3,6 +3,10 @@ import pygame
 
 from memory_access import *
 
+from ai.mario_bot import MarioBot
+from ai.genetic_algorithm import *
+from ai.neural_network import NeuralNetwork
+
 player_action = [1, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
@@ -16,11 +20,9 @@ class SuperMarioBros:
         self.running = True
 
         self.env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
-        observation = self.env.reset()
+        self.env.reset()
 
         print(self.env.buttons)
-        print(self.env.observation_space.shape)  # Dimensions of a frame
-        print(self.env.action_space.n)  # Number of actions our agent can take
 
     def process_events(self):
         global player_action
@@ -38,7 +40,6 @@ class SuperMarioBros:
                     self.env.reset()
 
     def run(self):
-
         while self.running:
             self.window.fill(WHITE)
             self.process_events()
@@ -190,5 +191,10 @@ class SuperMarioBros:
 
 
 if __name__ == '__main__':
-    game = SuperMarioBros()
-    game.run()
+    # game = SuperMarioBros()
+    # game.run()
+    bot = MarioBot(NeuralNetwork(NN_CONFIG))
+    print(bot.calculate_fitness())
+
+    bot.brain.init_random_neural_net()
+    print(bot.brain.weights)

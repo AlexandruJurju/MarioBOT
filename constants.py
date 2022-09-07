@@ -17,3 +17,8 @@ RIGHT_VIEW = 5
 BACK_VIEW = 2
 UP_VIEW = 5
 DOWN_VIEW = 2
+
+NN_CONFIG = {
+    "L1": [28, 16],
+    "L2": [16, 4]
+}
