@@ -115,6 +115,8 @@ player_vertical_screen_position = 0x00B5
 # TODO get player position with hitboxes
 player_hitbox = 0x04AC
 
+player_size = 0x0754
+
 
 def get_mario_level_location(ram: np.ndarray) -> Point:
     # gets mario position with global X and screen Y
@@ -226,8 +228,10 @@ def get_tiles(ram: np.ndarray):
         row += 1
 
     mario_model_position = get_mario_model_location(ram)
-    tile_map[(mario_model_position.y, mario_model_position.x)] = DynamicTile.mario
 
+    tile_map[(mario_model_position.y, mario_model_position.x)] = DynamicTile.mario
+    if ram[player_size] == 0:
+        tile_map[(mario_model_position.y - 1, mario_model_position.x)] = DynamicTile.mario
     return tile_map
 
 
