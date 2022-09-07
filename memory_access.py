@@ -228,15 +228,23 @@ def get_tiles(ram: np.ndarray):
             if row < 2:
                 tile_map[pos] = StaticTile.empty
             else:
+                found = False
                 tile_map[pos] = StaticTile.empty
 
                 for static_tile in StaticTile:
                     if static_tile.value == tile:
                         tile_map[pos] = static_tile
+                        found = True
+                        break
 
                 for dynamic_tile in DynamicTile:
                     if dynamic_tile.value == tile:
                         tile_map[pos] = dynamic_tile
+                        found = True
+                        break
+
+                if not found:
+                    tile_map[pos] = StaticTile.ground
 
             if len(enemies) != 0:
                 for enemy in enemies:

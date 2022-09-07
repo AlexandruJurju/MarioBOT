@@ -1,8 +1,6 @@
 import retro
 import pygame
-import numpy as np
 
-from constants import *
 from memory_access import *
 
 player_action = [1, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -55,9 +53,14 @@ class SuperMarioBros:
             tile_map = get_tiles(ram)
 
             self.draw_game_windows(observation)
-            self.draw_tile_model(tile_map)
-            self.draw_minimal_tile_model(tile_map, get_mario_model_location(ram), right_view, back_view, up_view, down_view)
-            self.highlight_minimal_tile_model(get_mario_model_location(ram), right_view, back_view, up_view, down_view)
+            self.draw_tile_map(tile_map, 550, 25, 15)
+
+            # static_tile_map = self.get_static_view_tiles(tile_map, Point(5, 5), Point(15, 14))
+            # self.draw_tile_map( static_tile_map, 550, 300, 15)
+
+            dynamic_tile_map = self.get_dynamic_view_tiles(tile_map, get_mario_model_location(ram), right_view, back_view, up_view, down_view)
+            self.draw_tile_map(dynamic_tile_map, 550, 300, 15)
+            self.highlight_map(dynamic_tile_map, 550, 25, 15)
 
             pygame.display.update()
             self.fps_clock.tick(MAX_FPS)
@@ -120,86 +123,129 @@ class SuperMarioBros:
         # A CIRCLE
         pygame.draw.circle(self.window, colors["Y"], (circle_base_x + circle_distance + circle_distance, circle_base_y), circle_radius)
 
-    def draw_square_from_tile(self, current_tile, draw_x, draw_y, square_size):
+    def draw_tile_from_from_tile_map(self, current_tile, x_position, y_position, square_size):
         if current_tile == StaticTile.empty:
-            pygame.draw.rect(self.window, (53, 81, 92), pygame.Rect(draw_x, draw_y, square_size, square_size))
+            pygame.draw.rect(self.window, (53, 81, 92), pygame.Rect(x_position, y_position, square_size, square_size))
 
         elif current_tile == StaticTile.ground:
-            pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(draw_x, draw_y, square_size, square_size))
+            pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(x_position, y_position, square_size, square_size))
 
         elif current_tile == StaticTile.pipe_top1 or current_tile == StaticTile.pipe_top2 \
                 or current_tile == StaticTile.pipe_bottom1 or current_tile == StaticTile.pipe_bottom2:
-            pygame.draw.rect(self.window, (0, 190, 0), pygame.Rect(draw_x, draw_y, square_size, square_size))
+            pygame.draw.rect(self.window, (0, 190, 0), pygame.Rect(x_position, y_position, square_size, square_size))
 
         elif current_tile == EnemyType.goomba:
-            pygame.draw.rect(self.window, (255, 64, 64), pygame.Rect(draw_x, draw_y, square_size, square_size))
+            pygame.draw.rect(self.window, (255, 64, 64), pygame.Rect(x_position, y_position, square_size, square_size))
 
         elif current_tile == DynamicTile.mario:
-            pygame.draw.rect(self.window, (255, 255, 0), pygame.Rect(draw_x, draw_y, square_size, square_size))
+            pygame.draw.rect(self.window, (255, 255, 0), pygame.Rect(x_position, y_position, square_size, square_size))
 
         else:
-            pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(draw_x, draw_y, square_size, square_size))
+            pygame.draw.rect(self.window, (155, 103, 60), pygame.Rect(x_position, y_position, square_size, square_size))
 
-        pygame.draw.rect(self.window, (255, 255, 255), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
+        pygame.draw.rect(self.window, (255, 255, 255), pygame.Rect(x_position, y_position, square_size, square_size), width=1)
 
-    def draw_tile_model(self, tile_map: {}):
-        square_size = 15
-        x_offset = 600
-        y_offset = 25
-
+    def get_static_view_tiles(self, tile_map: {}, top_left_corner: Point, bottom_right_corner: Point):
+        static_tile_map = {}
         for row in range(15):
             for col in range(16):
-                pos = (row, col)
-                current_tile = tile_map[pos]
-                draw_x = col * square_size + x_offset
-                draw_y = row * square_size + y_offset
+                if top_left_corner.y <= row <= bottom_right_corner.y and bottom_right_corner.x >= col >= top_left_corner.x:
+                    static_tile_map[(row, col)] = tile_map[(row, col)]
 
-                self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
+        return static_tile_map
 
-    def highlight_minimal_tile_model(self, mario_location: Point, right_view, back_view, up_view, down_view):
-        square_size = 15
-        x_offset = 600
-        y_offset = 25
-
+    def get_dynamic_view_tiles(self, tile_map: {}, mario_location: Point, right_view, back_view, up_view, down_view):
+        dynamic_tile_map = {}
         for row in range(mario_location.y - up_view, mario_location.y + down_view + 1):
             for col in range(mario_location.x - back_view, mario_location.x + right_view + 1):
-
-                if (0 <= row < 15) and (0 <= col < 16):
-                    draw_x = col * square_size + x_offset
-                    draw_y = row * square_size + y_offset
-
-                    pygame.draw.rect(self.window, (30, 144, 255), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
-
-    def draw_minimal_tile_model(self, tile_map: {}, mario_location: Point, right_view, back_view, up_view, down_view):
-        square_size = 20
-        x_offset = 500
-        y_offset = 225
-
-        for row in range(mario_location.y - up_view, mario_location.y + down_view + 1):
-            for col in range(mario_location.x - back_view, mario_location.x + right_view + 1):
-
                 # if within model matrix
                 if (0 <= row < 15) and (0 <= col < 16):
                     pos = (row, col)
+                    dynamic_tile_map[pos] = tile_map[pos]
+
+        return dynamic_tile_map
+
+    def draw_tile_map(self, tile_map: {}, x_offset, y_offset, square_size):
+        for row in range(15):
+            for col in range(16):
+                pos = (row, col)
+                draw_x = col * square_size + x_offset
+                draw_y = row * square_size + y_offset
+
+                if pos in tile_map:
                     current_tile = tile_map[pos]
-                    draw_x = col * square_size + x_offset
-                    draw_y = row * square_size + y_offset
+                    self.draw_tile_from_from_tile_map(current_tile, draw_x, draw_y, square_size)
+                else:
+                    pygame.draw.rect(self.window, (128, 128, 128), pygame.Rect(draw_x, draw_y, square_size, square_size), width=3)
 
-                    self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
+    def highlight_map(self, tile_map: {}, x_offset, y_offset, square_size):
+        for row in range(15):
+            for col in range(16):
+                pos = (row, col)
+                draw_x = col * square_size + x_offset
+                draw_y = row * square_size + y_offset
 
-    # def highlight_tile_model_zone(self, top_left_corner: Point, bottom_right_corner: Point):
-    #     square_size = 15
-    #     x_offset = 600
-    #     y_offset = 25
-    #
-    #     for row in range(15):
-    #         for col in range(16):
-    #             draw_x = col * square_size + x_offset
-    #             draw_y = row * square_size + y_offset
-    #
-    #             if top_left_corner.y <= row <= bottom_right_corner.y and bottom_right_corner.x >= col >= top_left_corner.x:
-    #                 pygame.draw.rect(self.window, (255, 0, 0), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
+                if pos in tile_map:
+                    pygame.draw.rect(self.window, (24, 115, 204), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
 
+
+# def highlight_tile_model_zone(self, top_left_corner: Point, bottom_right_corner: Point):
+#     square_size = 15
+#     x_offset = 600
+#     y_offset = 25
+#
+#     for row in range(15):
+#         for col in range(16):
+#             draw_x = col * square_size + x_offset
+#             draw_y = row * square_size + y_offset
+#
+#             if top_left_corner.y <= row <= bottom_right_corner.y and bottom_right_corner.x >= col >= top_left_corner.x:
+#                 pygame.draw.rect(self.window, (255, 0, 0), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
+
+# def draw_tile_model(self, tile_map: {}):
+#     square_size = 15
+#     x_offset = 600
+#     y_offset = 25
+#
+#     for row in range(15):
+#         for col in range(16):
+#             pos = (row, col)
+#             current_tile = tile_map[pos]
+#             draw_x = col * square_size + x_offset
+#             draw_y = row * square_size + y_offset
+#
+#             self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
+#
+# def draw_minimal_tile_model(self, tile_map: {}, mario_location: Point, right_view, back_view, up_view, down_view):
+#     square_size = 20
+#     x_offset = 500
+#     y_offset = 225
+#
+#     for row in range(mario_location.y - up_view, mario_location.y + down_view + 1):
+#         for col in range(mario_location.x - back_view, mario_location.x + right_view + 1):
+#
+#             # if within model matrix
+#             if (0 <= row < 15) and (0 <= col < 16):
+#                 pos = (row, col)
+#                 current_tile = tile_map[pos]
+#                 draw_x = col * square_size + x_offset
+#                 draw_y = row * square_size + y_offset
+#
+#                 self.draw_square_from_tile(current_tile, draw_x, draw_y, square_size)
+#
+#     def highlight_minimal_tile_model(self, mario_location: Point, right_view, back_view, up_view, down_view):
+#         square_size = 15
+#         x_offset = 600
+#         y_offset = 25
+#
+#         for row in range(mario_location.y - up_view, mario_location.y + down_view + 1):
+#             for col in range(mario_location.x - back_view, mario_location.x + right_view + 1):
+#
+#                 if (0 <= row < 15) and (0 <= col < 16):
+#                     draw_x = col * square_size + x_offset
+#                     draw_y = row * square_size + y_offset
+#
+#                     pygame.draw.rect(self.window, (30, 144, 255), pygame.Rect(draw_x, draw_y, square_size, square_size), width=1)
 
 if __name__ == '__main__':
     game = SuperMarioBros()
