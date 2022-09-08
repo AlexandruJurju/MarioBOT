@@ -16,3 +16,13 @@ class MarioBot(Individual):
 
     def calculate_fitness(self):
         return self.fitness
+
+    def inputs_to_neural_network_input_from(self, model: [int]):
+        pass
+
+    # return action from neural network input
+    # check if mario is dead or has won level
+    # update mario variables
+    # check is mario is stuck -> dead
+    def step(self):
+        pass

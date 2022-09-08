@@ -1,4 +1,3 @@
-import typing
 from enum import Enum
 from collections import namedtuple
 import numpy as np
@@ -127,14 +126,14 @@ def get_mario_level_location(ram: np.ndarray) -> Point:
     return Point(mario_x, mario_y)
 
 
-def get_mario_screen_location(ram: np.ndarray):
+def get_mario_screen_location(ram: np.ndarray) -> Point:
     mario_x = ram[player_x_position_within_current_screen_offset]
     mario_y = ram[player_y_position_within_current_screen_offset] * ram[player_vertical_screen_position] + 16
 
     return Point(mario_x, mario_y)
 
 
-def get_enemies_level_locations(ram: np.ndarray) -> []:
+def get_enemies_level_locations(ram: np.ndarray) -> [Point]:
     enemies = []
 
     for enemy_count in range(MAX_ENEMIES):
@@ -149,7 +148,7 @@ def get_enemies_level_locations(ram: np.ndarray) -> []:
     return enemies
 
 
-def get_enemies_screen_locations(ram: np.ndarray) -> []:
+def get_enemies_screen_locations(ram: np.ndarray) -> [Point]:
     enemies = []
 
     for enemy_count in range(MAX_ENEMIES):
@@ -245,7 +244,7 @@ def get_mario_model_location(ram: np.ndarray) -> Point:
     return Point(mario_model_x, mario_model_y)
 
 
-def model_map_from_tile_map(tile_map: {}):
+def model_map_from_tile_map(tile_map: {}) -> []:
     model = np.zeros((MINIMAL_VIEW_HEIGHT, MINIMAL_VIEW_WIDTH))
 
     i = 0
@@ -255,17 +254,24 @@ def model_map_from_tile_map(tile_map: {}):
             pos = (row, col)
 
             if pos in tile_map:
-                for static_tile in StaticTile:
-                    if tile_map[pos] == static_tile and static_tile != StaticTile.empty:
+                current_tile = tile_map[pos]
+                if isinstance(current_tile, StaticTile):
+                    if current_tile.value == 0 == 0:
+                        model[j][i] = 0
+                    else:
                         model[j][i] = 1
 
-                if tile_map[pos] == EnemyType.goomba:
+                if current_tile == EnemyType.goomba:
                     model[j][i] = -1
 
-                if tile_map[(row, col)] == DynamicTile.mario:
+                if current_tile == DynamicTile.mario:
                     model[j][i] = 0.5
                 i += 1
                 if i == MINIMAL_VIEW_WIDTH:
                     i = 0
                     j += 1
     return model
+
+# for static_tile in StaticTile:
+#     if tile_map[pos] == static_tile and static_tile != StaticTile.empty:
+#         model[j][i] = 1

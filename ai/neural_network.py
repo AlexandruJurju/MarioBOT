@@ -18,7 +18,7 @@ class NeuralNetwork:
     # a NN with 4 inputs ;  L1 with 10 neurons ; L2 with 6 neurons and  ; 3 outputs is given as
     # [ [4,10], [10,6], [6,3] ]
 
-    def __init__(self, neural_architecture: {}, hidden_activation: ActivationFunction = relu, output_activation: ActivationFunction = softmax):
+    def __init__(self, neural_architecture: {}, hidden_activation: ActivationFunction = relu, output_activation: ActivationFunction = sigmoid):
         self.neural_net_architecture = neural_architecture
         self.weights = {}
         self.biases = {}
