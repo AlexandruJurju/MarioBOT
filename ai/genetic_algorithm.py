@@ -103,11 +103,11 @@ def whole_mutation(child: NeuralNetwork, mutation_rate: float) -> NeuralNetwork:
     pass
 
 
-def gaussian_mutation() -> None:
+def gaussian_mutation():
     pass
 
 
-def random_uniform_mutation(c) -> None:
+def random_uniform_mutation(c):
     pass
 
 

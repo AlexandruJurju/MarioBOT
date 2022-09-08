@@ -18,7 +18,10 @@ LEFT_VIEW = 1
 UP_VIEW = 8
 DOWN_VIEW = 1
 
+MINIMAL_VIEW_WIDTH = RIGHT_VIEW + LEFT_VIEW + 1
+MINIMAL_VIEW_HEIGHT = UP_VIEW + DOWN_VIEW + 1
+
 NN_CONFIG = {
-    "L1": [28, 16],
-    "L2": [16, 4]
+    "L1": [70, 9],
+    "L2": [9, 3]
 }

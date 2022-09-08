@@ -134,7 +134,7 @@ def get_mario_screen_location(ram: np.ndarray):
     return Point(mario_x, mario_y)
 
 
-def get_enemies_level_locations(ram: np.ndarray) -> typing.List:
+def get_enemies_level_locations(ram: np.ndarray) -> []:
     enemies = []
 
     for enemy_count in range(MAX_ENEMIES):
@@ -149,7 +149,7 @@ def get_enemies_level_locations(ram: np.ndarray) -> typing.List:
     return enemies
 
 
-def get_enemies_screen_locations(ram: np.ndarray):
+def get_enemies_screen_locations(ram: np.ndarray) -> []:
     enemies = []
 
     for enemy_count in range(MAX_ENEMIES):
@@ -165,7 +165,7 @@ def get_enemies_screen_locations(ram: np.ndarray):
     return enemies
 
 
-def get_address_from_coordinates(x, y):
+def get_address_from_coordinates(x, y) -> int:
     page = (x // 256) % 2
     sub_x = (x % 256) // 16
     sub_y = (y - 32) // 16
@@ -173,12 +173,12 @@ def get_address_from_coordinates(x, y):
     return address
 
 
-def get_tile(x, y, ram: np.ndarray):
+def get_tile(x, y, ram: np.ndarray) -> int:
     address = get_address_from_coordinates(x, y)
     return ram[address]
 
 
-def get_tiles(ram: np.ndarray):
+def get_tiles(ram: np.ndarray) -> {}:
     tile_map = {}
     row = 0
     col = 0
@@ -235,7 +235,7 @@ def get_tiles(ram: np.ndarray):
     return tile_map
 
 
-def get_mario_model_location(ram: np.ndarray):
+def get_mario_model_location(ram: np.ndarray) -> Point:
     mario_level_position = get_mario_level_location(ram)
     mario_screen_position = get_mario_screen_location(ram)
 
@@ -246,14 +246,26 @@ def get_mario_model_location(ram: np.ndarray):
 
 
 def model_map_from_tile_map(tile_map: {}):
-    model = np.zeros((15, 16))
+    model = np.zeros((MINIMAL_VIEW_HEIGHT, MINIMAL_VIEW_WIDTH))
 
+    i = 0
+    j = 0
     for row in range(15):
         for col in range(16):
-            if tile_map[(row, col)] == StaticTile.empty:
-                model[row][col] = 1
-            if tile_map[(row, col)] == DynamicTile.mario:
-                model[row][col] = 6
-            print(model[row][col], end=" ")
-        print()
-    print()
+            pos = (row, col)
+
+            if pos in tile_map:
+                for static_tile in StaticTile:
+                    if tile_map[pos] == static_tile and static_tile != StaticTile.empty:
+                        model[j][i] = 1
+
+                if tile_map[pos] == EnemyType.goomba:
+                    model[j][i] = -1
+
+                if tile_map[(row, col)] == DynamicTile.mario:
+                    model[j][i] = 0.5
+                i += 1
+                if i == MINIMAL_VIEW_WIDTH:
+                    i = 0
+                    j += 1
+    return model
