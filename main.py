@@ -8,6 +8,7 @@ from ai.genetic_algorithm import *
 from ai.neural_network import NeuralNetwork
 
 player_action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+bot_action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 class SuperMarioBros:
@@ -40,21 +41,22 @@ class SuperMarioBros:
                     self.env.reset()
 
     def run(self):
-        global player_action
+        global bot_action
         bot = MarioBot(NeuralNetwork(NN_CONFIG))
         bot.brain.init_random_neural_net()
 
         while self.running:
             self.window.fill(WHITE)
-            self.process_events()
+            # self.process_events()
+            print(bot_action)
 
-            observation, reward, done, info = self.env.step(player_action)
+            observation, reward, done, info = self.env.step(bot_action)
             ram = self.env.get_ram()
             full_tile_map = get_tiles(ram)
 
             active_tile_map = self.get_active_model_view(full_tile_map, ram)
 
-            player_action = bot.step(model_map_from_tile_map(active_tile_map), ram)
+            bot_action = bot.step(model_map_from_tile_map(active_tile_map), ram)
 
             self.redraw_windows(observation, full_tile_map, active_tile_map)
 
