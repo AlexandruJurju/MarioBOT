@@ -110,11 +110,20 @@ player_y_position_within_current_screen_offset = 0x03B8
 # Player vertical screen position viewport = 1 | above viewport = 0 | anywhere below viewport is >1
 player_vertical_screen_position = 0x00B5
 
+# player state 0x06 - Player dies 0x0B - Dying
+player_state = [0x000E]
+
 # Player hitbox (1x4 bytes, <<x1,y1> <x2,y2>>)
 # TODO get player position with hitboxes
 player_hitbox = 0x04AC
 
 player_size = 0x0754
+
+
+def is_player_dead(ram: np.ndarray) -> bool:
+    if ram[player_state] == 0x0B or ram[player_state] == 0x06 or ram[player_vertical_screen_position] > 1:
+        return True
+    return False
 
 
 def get_mario_level_location(ram: np.ndarray) -> Point:

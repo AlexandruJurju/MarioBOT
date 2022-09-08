@@ -7,7 +7,7 @@ from ai.mario_bot import MarioBot
 from ai.genetic_algorithm import *
 from ai.neural_network import NeuralNetwork
 
-player_action = [1, 0, 0, 0, 0, 0, 0, 0, 0]
+player_action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 class SuperMarioBros:
@@ -31,15 +31,19 @@ class SuperMarioBros:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
                 if event.key == pygame.K_UP:
-                    player_action = [0, 0, 0, 0, 0, 0, 0, 0, 1]
+                    player_action = [1, 0, 0, 0, 0, 0, 0, 0, 1]
                 if event.key == pygame.K_RIGHT:
-                    player_action = [0, 0, 0, 0, 0, 0, 0, 1, 0]
+                    player_action = [1, 0, 0, 0, 0, 0, 0, 1, 0]
                 if event.key == pygame.K_LEFT:
-                    player_action = [0, 0, 0, 0, 0, 0, 1, 0, 0]
+                    player_action = [1, 0, 0, 0, 0, 0, 1, 0, 0]
                 if event.key == pygame.K_r:
                     self.env.reset()
 
     def run(self):
+        global player_action
+        bot = MarioBot(NeuralNetwork(NN_CONFIG))
+        bot.brain.init_random_neural_net()
+
         while self.running:
             self.window.fill(WHITE)
             self.process_events()
@@ -49,10 +53,10 @@ class SuperMarioBros:
             full_tile_map = get_tiles(ram)
 
             active_tile_map = self.get_active_model_view(full_tile_map, ram)
-            self.redraw_windows(observation, full_tile_map, active_tile_map)
 
-            print(str(model_map_from_tile_map(active_tile_map)))
-            print()
+            player_action = bot.step(model_map_from_tile_map(active_tile_map), ram)
+
+            self.redraw_windows(observation, full_tile_map, active_tile_map)
 
             self.fps_clock.tick(MAX_FPS)
 
@@ -207,9 +211,3 @@ class SuperMarioBros:
 if __name__ == '__main__':
     game = SuperMarioBros()
     game.run()
-
-    # bot = MarioBot(NeuralNetwork(NN_CONFIG))
-    # print(bot.calculate_fitness())
-    #
-    # bot.brain.init_random_neural_net()
-    # print(bot.brain.weights)
