@@ -155,9 +155,28 @@ def single_point_binary_crossover(parent1: NeuralNetwork, parent2: NeuralNetwork
     child2 = copy.deepcopy(parent2)
 
     for layer in parent1.neural_net_architecture:
-        matrix_rows, matrix_cols = parent1.weights[layer].shape
-        row = np.random.randint(0, matrix_rows)
-        col = np.random.randint(0, matrix_cols)
+        rows, cols = parent1.weights[layer].shape
+        row = np.random.randint(0, rows)
+        col = np.random.randint(0, cols)
+
+        child1.weights[layer][:row, :] = parent2.weights[layer][:row, :]
+        child2.weights[layer][:row, :] = parent1.weights[layer][:row, :]
+
+        child1.weights[layer][row, :col] = parent2.weights[layer][row, :col]
+        child2.weights[layer][row, :col] = parent1.weights[layer][row, :col]
+
+    for layer in parent1.neural_net_architecture:
+        rows, cols = parent1.biases[layer].shape
+        row = np.random.randint(0, rows)
+        col = np.random.randint(0, cols)
+
+        child1.biases[layer][:row, :] = parent2.biases[layer][:row, :]
+        child2.biases[layer][:row, :] = parent1.biases[layer][:row, :]
+
+        child1.biases[layer][row, :col] = parent2.biases[layer][row, :col]
+        child2.biases[layer][row, :col] = parent1.biases[layer][row, :col]
+
+    return child1, child2
 
 
 # =========== MUTATION ===========

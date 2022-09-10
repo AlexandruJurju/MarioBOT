@@ -60,10 +60,10 @@ class SuperMarioBros:
 
             bot_action = bot.step(model_map_from_tile_map(active_tile_map), ram)
 
-            if bot.is_dead(ram):
+            if bot.is_dead(ram) or self.generation > 0:
                 print(str(self.generation) + " " + str(len(self.parent_list)))
 
-                if self.generation == 0 and len(self.parent_list) < NUM_OFFSPRING:
+                if self.generation == 0:
                     bot.calculate_fitness()
                     self.parent_list.append(bot)
                     self.env.reset()
@@ -71,14 +71,15 @@ class SuperMarioBros:
                     bot = MarioBot(NeuralNetwork(NN_CONFIG))
                     bot.brain.init_random_neural_net()
 
-                elif self.generation > 0 and len(self.parent_list) < NUM_OFFSPRING:
+                elif self.generation > 0:
                     bot.calculate_fitness()
                     self.parent_list.append(bot)
                     self.env.reset()
-                    bot.reset()
-                    bot.brain = self.offspring_list[len(self.parent_list)]
 
-                else:
+                    bot = MarioBot(NeuralNetwork(NN_CONFIG))
+                    bot.brain = self.offspring_list[len(self.parent_list) - 1]
+
+                if len(self.parent_list) == 1000:
                     self.next_generation()
 
             self.redraw_windows(observation, full_tile_map, active_tile_map)
@@ -86,26 +87,21 @@ class SuperMarioBros:
 
     def next_generation(self):
         self.generation += 1
-
         self.offspring_list = []
 
         sum_fitness = 0
         sum_max_distance = 0
-
         for bot in self.parent_list:
             sum_fitness += bot.fitness
             sum_max_distance += bot.max_distance
-
         print("FIT : " + str(sum_fitness / len(self.parent_list)) + " AVG MAX DIST : " + str(sum_max_distance / len(self.parent_list)))
 
         parents_for_mating = elitist_selection(self.parent_list, 5)
-
         random.shuffle(parents_for_mating)
 
         while len(self.offspring_list) < NUM_OFFSPRING:
             parent1, parent2 = roulette_selection(parents_for_mating, 2)
-
-            child1, child2 = one_point_crossover(parent1.brain, parent2.brain)
+            child1, child2 = single_point_binary_crossover(parent1.brain, parent2.brain)
 
             gaussian_mutation(child1, MUTATION_RATE, GAUSSIAN_MUTATION_SCALE)
             gaussian_mutation(child2, MUTATION_RATE, GAUSSIAN_MUTATION_SCALE)
@@ -113,6 +109,8 @@ class SuperMarioBros:
             self.offspring_list.append(child1)
             self.offspring_list.append(child2)
 
+        bot = MarioBot(NeuralNetwork(NN_CONFIG))
+        bot.brain = self.offspring_list[0]
         self.parent_list = []
 
     def redraw_windows(self, observation, tile_map, active_tile_map):
