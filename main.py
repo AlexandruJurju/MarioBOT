@@ -4,7 +4,7 @@ import pygame
 from memory_access import *
 
 from ai.mario_bot import MarioBot
-from ai.genetic_algorithm import *
+from genetic_algorithm.genetic_algorithm import *
 from ai.neural_network import NeuralNetwork
 
 player_action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -23,20 +23,18 @@ class SuperMarioBros:
         self.env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
         self.env.reset()
 
-        print(self.env.buttons)
-
     def process_events(self):
         global player_action
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                if event.key == pygame.K_UP:
-                    player_action = [1, 0, 0, 0, 0, 0, 0, 0, 1]
-                if event.key == pygame.K_RIGHT:
-                    player_action = [1, 0, 0, 0, 0, 0, 0, 1, 0]
-                if event.key == pygame.K_LEFT:
-                    player_action = [1, 0, 0, 0, 0, 0, 1, 0, 0]
+                # if event.key == pygame.K_UP:
+                #     player_action = [1, 0, 0, 0, 0, 0, 0, 0, 1]
+                # if event.key == pygame.K_RIGHT:
+                #     player_action = [1, 0, 0, 0, 0, 0, 0, 1, 0]
+                # if event.key == pygame.K_LEFT:
+                #     player_action = [1, 0, 0, 0, 0, 0, 1, 0, 0]
                 if event.key == pygame.K_r:
                     self.env.reset()
 
@@ -47,8 +45,7 @@ class SuperMarioBros:
 
         while self.running:
             self.window.fill(WHITE)
-            # self.process_events()
-            print(bot_action)
+            self.process_events()
 
             observation, reward, done, info = self.env.step(bot_action)
             ram = self.env.get_ram()

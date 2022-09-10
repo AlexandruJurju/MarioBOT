@@ -16,12 +16,12 @@ class MarioBot(Individual):
         self.ttl = 500
         self.steps_alive = 0
         self.current_x = 0
-        self.max_distance = -1
+        self.max_distance = 0
         self.score = 0
 
     # TODO find a fitness function
     def calculate_fitness(self):
-        pass
+        max(self.max_distance ** 1.8 - self.steps_alive ** 1.5 + min(max(self.max_distance - 50, 0), 1) * 2500 + self.won_level * 1e6, 0.00001)
 
     def model_to_neural_network_input_form(self, model: [int]) -> np.ndarray:
         nn_input = []
@@ -70,7 +70,6 @@ class MarioBot(Individual):
             processed_input = self.model_to_neural_network_input_form(model)
             nn_output = self.brain.feed_forward(processed_input)
 
-            threshold = np.where(nn_output > 0.5)[0]
             #         B  X  X  X  U  D  L  R  A
             action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
