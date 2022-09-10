@@ -10,18 +10,17 @@ class MarioBot(Individual):
     def __init__(self, brain: NeuralNetwork):
         super().__init__(brain)
 
-        self.is_alive = True
         self.won_level = False
 
-        self.ttl = 500
-        self.steps_alive = 0
+        self.ttl = BOT_TTL
+        self.steps_taken = 0
         self.current_x = 0
         self.max_distance = 0
         self.score = 0
 
     # TODO find a fitness function
     def calculate_fitness(self):
-        max(self.max_distance ** 1.8 - self.steps_alive ** 1.5 + min(max(self.max_distance - 50, 0), 1) * 2500 + self.won_level * 1e6, 0.00001)
+        self.fitness = max(self.max_distance ** 1.8 - self.steps_taken ** 1.5 + min(max(self.max_distance - 40, 0), 1) * 2500 + self.won_level * 1e6, 0.00001)
 
     def model_to_neural_network_input_form(self, model: [int]) -> np.ndarray:
         nn_input = []
@@ -49,38 +48,42 @@ class MarioBot(Individual):
     # update mario variables
     # check is mario is stuck -> dead
     def step(self, model: [], ram: np.ndarray):
-        if is_player_dead(ram):
-            self.is_alive = False
 
-        if self.ttl == 0:
-            self.is_alive = False
+        self.steps_taken += 1
+        self.current_x = get_mario_level_location(ram).x
 
-        if self.is_alive:
-            self.steps_alive += 1
-            self.current_x = get_mario_level_location(ram).x
-
-            if self.current_x <= self.max_distance:
-                self.ttl = self.ttl - 1
-            else:
-                self.ttl = 500
-
-            if self.current_x > self.max_distance:
-                self.max_distance = self.current_x
-
-            processed_input = self.model_to_neural_network_input_form(model)
-            nn_output = self.brain.feed_forward(processed_input)
-
-            #         B  X  X  X  U  D  L  R  A
-            action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-            for i, output in enumerate(nn_output):
-                if output > 0.5:
-                    if i > 0:
-                        action[i + 3] = 1
-                    else:
-                        action[0] = 1
-
-            return action
-
+        if self.current_x <= self.max_distance:
+            self.ttl = self.ttl - 1
         else:
-            return []
+            self.ttl = BOT_TTL
+
+        if self.current_x > self.max_distance:
+            self.max_distance = self.current_x
+
+        processed_input = self.model_to_neural_network_input_form(model)
+        nn_output = self.brain.feed_forward(processed_input)
+
+        #         B  X  X  X  U  D  L  R  A
+        action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+        for i, output in enumerate(nn_output):
+            if output > 0.5:
+                if i > 0:
+                    action[i + 3] = 1
+                else:
+                    action[0] = 1
+        return action
+
+    def is_dead(self, ram: np.ndarray):
+        if is_player_dead(ram) or self.ttl == 0:
+            return True
+        return False
+
+    def reset(self):
+        self.won_level = False
+
+        self.ttl = BOT_TTL
+        self.steps_taken = 0
+        self.current_x = 0
+        self.max_distance = 0
+        self.score = 0

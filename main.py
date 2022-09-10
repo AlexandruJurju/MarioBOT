@@ -1,3 +1,5 @@
+import random
+
 import retro
 import pygame
 
@@ -22,6 +24,10 @@ class SuperMarioBros:
 
         self.env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
         self.env.reset()
+
+        self.generation = 0
+        self.parent_list = []
+        self.offspring_list = []
 
     def process_events(self):
         global player_action
@@ -50,25 +56,75 @@ class SuperMarioBros:
             observation, reward, done, info = self.env.step(bot_action)
             ram = self.env.get_ram()
             full_tile_map = get_tiles(ram)
-
             active_tile_map = self.get_active_model_view(full_tile_map, ram)
 
             bot_action = bot.step(model_map_from_tile_map(active_tile_map), ram)
 
-            self.redraw_windows(observation, full_tile_map, active_tile_map)
+            if bot.is_dead(ram):
+                print(str(self.generation) + " " + str(len(self.parent_list)))
 
-            self.fps_clock.tick(MAX_FPS)
+                if self.generation == 0 and len(self.parent_list) < NUM_OFFSPRING:
+                    bot.calculate_fitness()
+                    self.parent_list.append(bot)
+                    self.env.reset()
+
+                    bot = MarioBot(NeuralNetwork(NN_CONFIG))
+                    bot.brain.init_random_neural_net()
+
+                elif self.generation > 0 and len(self.parent_list) < NUM_OFFSPRING:
+                    bot.calculate_fitness()
+                    self.parent_list.append(bot)
+                    self.env.reset()
+                    bot.reset()
+                    bot.brain = self.offspring_list[len(self.parent_list)]
+
+                else:
+                    self.next_generation()
+
+            self.redraw_windows(observation, full_tile_map, active_tile_map)
+            # self.fps_clock.tick(MAX_FPS)
+
+    def next_generation(self):
+        self.generation += 1
+
+        self.offspring_list = []
+
+        sum_fitness = 0
+        sum_max_distance = 0
+
+        for bot in self.parent_list:
+            sum_fitness += bot.fitness
+            sum_max_distance += bot.max_distance
+
+        print("FIT : " + str(sum_fitness / len(self.parent_list)) + " AVG MAX DIST : " + str(sum_max_distance / len(self.parent_list)))
+
+        parents_for_mating = elitist_selection(self.parent_list, 5)
+
+        random.shuffle(parents_for_mating)
+
+        while len(self.offspring_list) < NUM_OFFSPRING:
+            parent1, parent2 = roulette_selection(parents_for_mating, 2)
+
+            child1, child2 = one_point_crossover(parent1.brain, parent2.brain)
+
+            gaussian_mutation(child1, MUTATION_RATE, GAUSSIAN_MUTATION_SCALE)
+            gaussian_mutation(child2, MUTATION_RATE, GAUSSIAN_MUTATION_SCALE)
+
+            self.offspring_list.append(child1)
+            self.offspring_list.append(child2)
+
+        self.parent_list = []
 
     def redraw_windows(self, observation, tile_map, active_tile_map):
         # emulator game window
         self.draw_emulator_window(observation)
 
-        # main model
-        self.draw_model_view(tile_map, 550, 25, 15)
-
-        # minimal view
-        self.draw_model_view(active_tile_map, 550, 300, 15)
-        self.draw_highlight_model_view(active_tile_map, 550, 25, 15)
+        # # main model
+        # self.draw_model_view(tile_map, 550, 25, 15)
+        #
+        # # minimal view
+        # self.draw_model_view(active_tile_map, 550, 300, 15)
+        # self.draw_highlight_model_view(active_tile_map, 550, 25, 15)
 
         pygame.display.update()
 

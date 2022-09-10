@@ -42,7 +42,7 @@ def two_point_roulette_selection(population: List[Individual], individuals_to_se
 
 # Returns the best n individuals from a population by fitness
 def elitist_selection(population: List[Individual], individuals_to_select: int) -> List[Individual]:
-    selected = population.sort(key=lambda individual: individual.fitness, reverse=True)
+    selected = sorted(population, key=lambda individual: individual.fitness, reverse=True)
     return selected[:individuals_to_select]
 
 
