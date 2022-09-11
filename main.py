@@ -15,7 +15,7 @@ bot_action = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 class SuperMarioBros:
     def __init__(self):
-        pygame.init()
+        # pygame.init()
         pygame.display.set_caption("SMB")
 
         self.window = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -28,6 +28,9 @@ class SuperMarioBros:
         self.generation = 0
         self.parent_list = []
         self.offspring_list = []
+
+        self.bot = MarioBot(NeuralNetwork(NN_CONFIG))
+        self.bot.brain.init_random_neural_net()
 
     def process_events(self):
         global player_action
@@ -46,43 +49,41 @@ class SuperMarioBros:
 
     def run(self):
         global bot_action
-        bot = MarioBot(NeuralNetwork(NN_CONFIG))
-        bot.brain.init_random_neural_net()
 
         while self.running:
-            self.window.fill(WHITE)
-            self.process_events()
+            # self.window.fill(WHITE)
+            # self.process_events()
 
-            observation, reward, done, info = self.env.step(bot_action)
+            observation = self.env.step(bot_action)
             ram = self.env.get_ram()
             full_tile_map = get_tiles(ram)
             active_tile_map = self.get_active_model_view(full_tile_map, ram)
 
-            bot_action = bot.step(model_map_from_tile_map(active_tile_map), ram)
+            bot_action = self.bot.step(model_map_from_tile_map(active_tile_map), ram)
 
-            if bot.is_dead(ram) or self.generation > 0:
-                print(str(self.generation) + " " + str(len(self.parent_list)))
+            if self.bot.is_dead(ram):
+                print("GEN " + str(self.generation) + " BOT " + str(len(self.parent_list)) + " MAX_DISTANCE " + str(self.bot.max_distance))
 
                 if self.generation == 0:
-                    bot.calculate_fitness()
-                    self.parent_list.append(bot)
+                    self.bot.calculate_fitness()
+                    self.parent_list.append(self.bot)
                     self.env.reset()
 
-                    bot = MarioBot(NeuralNetwork(NN_CONFIG))
-                    bot.brain.init_random_neural_net()
+                    self.bot = MarioBot(NeuralNetwork(NN_CONFIG))
+                    self.bot.brain.init_random_neural_net()
 
                 elif self.generation > 0:
-                    bot.calculate_fitness()
-                    self.parent_list.append(bot)
+                    self.bot.calculate_fitness()
+                    self.parent_list.append(self.bot)
                     self.env.reset()
 
-                    bot = MarioBot(NeuralNetwork(NN_CONFIG))
-                    bot.brain = self.offspring_list[len(self.parent_list) - 1]
+                    self.bot = MarioBot(NeuralNetwork(NN_CONFIG))
+                    self.bot.brain = self.offspring_list[len(self.parent_list) - 1]
 
                 if len(self.parent_list) == 1000:
                     self.next_generation()
 
-            self.redraw_windows(observation, full_tile_map, active_tile_map)
+            # self.redraw_windows(observation, full_tile_map, active_tile_map)
             # self.fps_clock.tick(MAX_FPS)
 
     def next_generation(self):
@@ -94,12 +95,13 @@ class SuperMarioBros:
         for bot in self.parent_list:
             sum_fitness += bot.fitness
             sum_max_distance += bot.max_distance
+        print("============== GENERATION " + str(self.generation) + " ==============")
         print("FIT : " + str(sum_fitness / len(self.parent_list)) + " AVG MAX DIST : " + str(sum_max_distance / len(self.parent_list)))
 
-        parents_for_mating = elitist_selection(self.parent_list, 5)
+        parents_for_mating = elitist_selection(self.parent_list, 200)
         random.shuffle(parents_for_mating)
 
-        while len(self.offspring_list) < NUM_OFFSPRING:
+        while len(self.offspring_list) < 1000:
             parent1, parent2 = roulette_selection(parents_for_mating, 2)
             child1, child2 = single_point_binary_crossover(parent1.brain, parent2.brain)
 
@@ -109,8 +111,9 @@ class SuperMarioBros:
             self.offspring_list.append(child1)
             self.offspring_list.append(child2)
 
-        bot = MarioBot(NeuralNetwork(NN_CONFIG))
-        bot.brain = self.offspring_list[0]
+        self.bot = MarioBot(NeuralNetwork(NN_CONFIG))
+        self.bot.brain = self.offspring_list[0]
+
         self.parent_list = []
 
     def redraw_windows(self, observation, tile_map, active_tile_map):

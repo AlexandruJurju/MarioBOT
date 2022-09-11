@@ -1,3 +1,5 @@
+from ai.neural_network import NeuralNetwork
+
 WIDTH, HEIGHT = 1000, 650
 MAX_FPS = 10000
 
@@ -37,3 +39,5 @@ GAUSSIAN_MUTATION_SCALE = 0.2
 
 NUM_PARENTS_FOR_MATING = 5
 NUM_OFFSPRING = 10
+
+GENERAL_NEURAL_NET = NeuralNetwork(NN_CONFIG)
