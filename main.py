@@ -32,6 +32,8 @@ class SuperMarioBros:
         self.bot = MarioBot(NeuralNetwork(NN_CONFIG))
         self.bot.brain.init_random_neural_net()
 
+        self.max_dist = -1
+
     def process_events(self):
         global player_action
         for event in pygame.event.get():
@@ -95,6 +97,11 @@ class SuperMarioBros:
         for bot in self.parent_list:
             sum_fitness += bot.fitness
             sum_max_distance += bot.max_distance
+
+            if bot.max_distance > self.max_dist:
+                self.max_dist = bot.max_distance
+                print(bot.brain.weights)
+                print(bot.brain.biases)
         print("============== GENERATION " + str(self.generation) + " ==============")
         print("FIT : " + str(sum_fitness / len(self.parent_list)) + " AVG MAX DIST : " + str(sum_max_distance / len(self.parent_list)))
 
